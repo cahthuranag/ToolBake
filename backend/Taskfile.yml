@@ -4,12 +4,13 @@ vars:
   BINARY_NAME: app
   BUILD_DIR: bin
   TEMP_DIR: tmp
+  TASK_VERSION: v3.45.5
 
 tasks:
   install-tools:
     desc: Install development tools
     cmds:
-      - go install github.com/go-task/task/v3/cmd/task@latest
+      - go install github.com/go-task/task/v3/cmd/task@{{.TASK_VERSION}}
       - go install github.com/air-verse/air@latest
       - go install github.com/swaggo/swag/cmd/swag@latest
       - go install github.com/golang/mock/mockgen@v1.6.0

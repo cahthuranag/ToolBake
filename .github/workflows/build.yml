@@ -47,7 +47,7 @@ jobs:
       - name: Install Go tools and generate
         working-directory: backend
         run: |
-          go install github.com/go-task/task/v3/cmd/task@latest
+          go install github.com/go-task/task/v3/cmd/task@v3.45.5
           task install-tools
           task generate
 
