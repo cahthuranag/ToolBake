@@ -37,6 +37,11 @@ async function handler(inputWidgets, changedWidgetIds, callback) {
     return updates;
   }
 
+  if (source.wasCleared) {
+    updates.status_note = buildStatusNote(rateEntity, null, "Input cleared. Conversion skipped.");
+    return updates;
+  }
+
   const sourceRate = resolveRate(rateEntity.rates, source.code);
   if (!sourceRate) {
     updates.status_note = buildStatusNote(rateEntity, source.code, `Missing rate for ${source.code}.`);
@@ -206,14 +211,16 @@ function resolveSourceValue(currencyWidgets, inputWidgets, changedWidgetIds, Dec
       return widget.id === changedWidgetIds;
     });
     if (match) {
-      const value = parseDecimalInput(inputWidgets[match.id], Decimal);
-      if (value) return { id: match.id, code: match.code, value };
+      const rawValue = inputWidgets[match.id];
+      const value = parseDecimalInput(rawValue, Decimal);
+      if (value) return { id: match.id, code: match.code, value, wasCleared: false };
+      if (isClearedDecimalInput(rawValue)) return { id: match.id, code: match.code, value: null, wasCleared: true };
     }
   }
 
   for (const widget of currencyWidgets) {
     const value = parseDecimalInput(inputWidgets[widget.id], Decimal);
-    if (value) return { id: widget.id, code: widget.code, value };
+    if (value) return { id: widget.id, code: widget.code, value, wasCleared: false };
   }
 
   return null;
@@ -260,6 +267,12 @@ function parseDecimalInput(value, Decimal) {
 // Validate decimal strings without using try/catch.
 function isDecimalText(value) {
   return /^[+-]?(?:\d+\.?\d*|\d*\.\d+)$/.test(value);
+}
+
+// Detect when the user explicitly cleared a numeric text field.
+function isClearedDecimalInput(value) {
+  if (value === null || value === undefined) return false;
+  return String(value).trim() === "";
 }
 
 // Format decimal values with trimmed trailing zeros.
